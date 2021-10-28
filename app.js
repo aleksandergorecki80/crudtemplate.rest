@@ -31,12 +31,6 @@ if (process.env.NODE_ENV === 'production') {
       res.sendFile(path.resolve(__dirname, './client', 'build', 'index.html'));
     });
   }
-  
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err, promise) => {
-  console.log(`Error: ${err} on ${promise}`);
-  server.close(() => process.exit(1));
-});
 
 console.log(`Running in ${process.env.NODE_ENV} mode.`);
 module.exports = app;

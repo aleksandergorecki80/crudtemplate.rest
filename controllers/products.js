@@ -22,7 +22,6 @@ exports.getProduct = async (req, res, next) => {
   try {
     const product = await Product.findById(req.params.id);
     if (!product) {
-      // return res.status(400).json({ success: false });
       return next(
         new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
       );
@@ -32,8 +31,6 @@ exports.getProduct = async (req, res, next) => {
       data: product,
     });
   } catch (err) {
-    // res.status(400).json({ success: false, data: error });
-    // next(new ErrorResponse(`Product not found with id of ${req.params.id}`, 404));
     next(err);
   }
 };
@@ -49,7 +46,6 @@ exports.createProduct = async (req, res, next) => {
       data: product,
     });
   } catch (err) {
-    // res.status(400).json({ success: false, data: error });
     next(err);
   }
 };
@@ -73,7 +69,6 @@ exports.updateProduct = async (req, res, next) => {
       data: product,
     });
   } catch (err) {
-    // res.status(400).json({ success: false, data: error });
     next(err);
   }
 };
@@ -82,17 +77,17 @@ exports.updateProduct = async (req, res, next) => {
 // @route   DELETE /api/v1/products/:id
 // @access  Private
 exports.deleteProduct = async (req, res, next) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
-  if (!product) {
-    res.status(400).json({ success: false });
-  }
   try {
-    res.status(200).json({
-      success: true,
-      data: product,
-    });
+    const product = await Product.findByIdAndDelete(req.params.id);
+    if (!product) {
+      return next(
+        new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
+      )}
+      res.status(200).json({
+        success: true,
+        data: product,
+      });
   } catch (err) {
-    // res.status(400).json({ success: false, data: error });
     next(err);
   }
 };

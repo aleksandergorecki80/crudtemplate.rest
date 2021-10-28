@@ -8,11 +8,23 @@ const emailData = config.get('emailData');
 const host = config.get('host');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
+const { validationResult } = require('express-validator');
+const ErrorResponse = require('../utils/errorResponse');
+
 
 exports.registerUser = async (req, res, next) => {
   const { password } = req.body;
+  const errors = validationResult(req);
 
   try {
+    if(!errors.isEmpty()){
+      const validationErrors = {}
+      errors.array().forEach(element => {
+        validationErrors[element.param] = element.msg;
+      });
+      console.log(validationErrors)
+      return res.status(400).json({ success: false, errors: validationErrors });
+    }
     // Encrypting the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
@@ -28,7 +40,6 @@ exports.registerUser = async (req, res, next) => {
       },
     });
   } catch (err) {
-    console.error(err.message);
     // return res.status(500).send('Server error');
     next(err);
   }

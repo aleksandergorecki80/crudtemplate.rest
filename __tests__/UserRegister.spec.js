@@ -65,14 +65,34 @@ const postUser = (user = validUser) => {
     expect(response.status).toBe(400);
   });
 
-  it('Returns validation errors when name is null', async ()=> {
+  it('Returns validation errors when name is null', async () => {
     const response = await postUser({
-      name: null,
-      email: 'pierwszytest@muzykant.pl',
+      name: '',
+      email: 'filemon@kot.com',
       password: 'P4sword',
     });
-    expect(response.body).toMatchObject({ success: false, error: 'Please add a name.' });
+    expect(response.body).toMatchObject( {success: false, errors: {name: 'Username can not be null'}} );
   });
+
+  it('Returns validation errors when email is null', async ()=> {
+    const response = await postUser({
+      name: 'Kot Filemon',
+      email: null,
+      password: 'P4sword',
+    });
+    expect(response.body).toMatchObject({ success: false, errors: {email: 'Email can not be null'} });
+  });
+
+  it('Returns errors for email and name', async () => {
+    const response = await postUser({
+      name: '',
+      email: null,
+      password: 'P4sword',
+    });
+    const body = response.body;
+    expect(Object.keys(body.errors)).toEqual(['name', 'email']);
+  }); 
+
 
   it("Hashes the password in database", async () => {
     await postUser();
