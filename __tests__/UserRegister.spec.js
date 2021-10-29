@@ -56,22 +56,13 @@ const postUser = (user = validUser) => {
     });
   });
 
-  it('Returns 400 when user name is null', async ()=> {
-    const response = await postUser({
-      name: null,
-      email: 'pierwszytest@muzykant.pl',
-      password: 'P4sword',
-    });
-    expect(response.status).toBe(400);
-  });
-
   it('Returns validation errors when name is null', async () => {
     const response = await postUser({
       name: '',
       email: 'filemon@kot.com',
       password: 'P4sword',
     });
-    expect(response.body).toMatchObject( {success: false, errors: {name: 'Username can not be null'}} );
+    expect(response.body).toMatchObject( { success: false, errors: ['Username can not be null'] } );
   });
 
   it('Returns validation errors when email is null', async ()=> {
@@ -80,7 +71,7 @@ const postUser = (user = validUser) => {
       email: null,
       password: 'P4sword',
     });
-    expect(response.body).toMatchObject({ success: false, errors: {email: 'Email can not be null'} });
+    expect(response.body).toMatchObject({ success: false, errors: ['Email can not be null'] });
   });
 
   it('Returns errors for email and name', async () => {
@@ -90,7 +81,7 @@ const postUser = (user = validUser) => {
       password: 'P4sword',
     });
     const body = response.body;
-    expect(Object.keys(body.errors)).toEqual(['name', 'email']);
+    expect(body.errors.length).toBe(2);
   }); 
 
 

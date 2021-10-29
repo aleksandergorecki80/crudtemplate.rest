@@ -18,17 +18,17 @@ exports.registerUser = async (req, res, next) => {
 
   try {
     if(!errors.isEmpty()){
-      const validationErrors = {}
+      let validationErrors = []
       errors.array().forEach(element => {
-        validationErrors[element.param] = element.msg;
+        validationErrors = [ ...validationErrors, element.msg ];
       });
-      console.log(validationErrors)
-      return res.status(400).json({ success: false, errors: validationErrors });
+      return next(
+        new ErrorResponse(validationErrors, 404)
+      );
     }
     // Encrypting the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
     const userData = new User({ ...req.body,  password: hashedPassword });
     const user = await User.create(userData);
 
@@ -40,7 +40,6 @@ exports.registerUser = async (req, res, next) => {
       },
     });
   } catch (err) {
-    // return res.status(500).send('Server error');
     next(err);
   }
 };
