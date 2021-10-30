@@ -7,7 +7,37 @@ const asyncHandler = require('../middleware/async');
 // @route   GET /api/v1/products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res, next) => {
-  const products = await Product.find();
+  let query;
+  const reqQuery = { ...req.query };
+
+  // Fields to exclude, and remove them
+  const removeFields = ['select', 'sort'];
+  removeFields.forEach((param) => delete reqQuery[param]);
+
+  // Create querry string and add operators
+  let queryStr = JSON.stringify(reqQuery);
+  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match)=> `$${match}`);
+
+  // Finding resources id DB 
+  query = Product.find(JSON.parse(queryStr));
+
+  // Select fields
+  if(req.query.select){
+    const fields = req.query.select.split(',').join(' ');
+    // Selecting fields to display
+    query = query.select(fields);
+  }
+  if(req.query.sort){
+    const fields = req.query.sort.split(',').join(' ');
+    // Sorting by fields
+    query = query.sort(fields);
+  } else {
+    query = query.sort('-date');
+  }
+
+  // and exequting
+  const products = await query;
+
   res.status(200).json({
     success: true,
     data: products,
