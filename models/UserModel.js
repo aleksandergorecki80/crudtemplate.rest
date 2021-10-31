@@ -22,7 +22,8 @@ const UserShema = new mongoose.Schema({
     },
     status: {
         type: String,
-        default: 'user'
+        default: 'user',
+        enum: ['administrator', 'moderator', 'user']
     },
     isConfirmed: {
         type: Boolean,

@@ -7,27 +7,33 @@ const asyncHandler = require('../middleware/async');
 // @route   GET /api/v1/products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res, next) => {
-  let query;
   const reqQuery = { ...req.query };
 
   // Fields to exclude, and remove them
-  const removeFields = ['select', 'sort'];
+  const removeFields = ['select', 'sort', 'page', 'limit'];
   removeFields.forEach((param) => delete reqQuery[param]);
+
+  console.log(req.query);
+  console.log(reqQuery);
 
   // Create querry string and add operators
   let queryStr = JSON.stringify(reqQuery);
-  queryStr = queryStr.replace(/\b(gt|gte|lt|lte|in)\b/g, (match)=> `$${match}`);
+  queryStr = queryStr.replace(
+    /\b(gt|gte|lt|lte|in)\b/g,
+    (match) => `$${match}`
+  );
 
-  // Finding resources id DB 
-  query = Product.find(JSON.parse(queryStr));
+  // Finding resources id DB
+  let query = Product.find(JSON.parse(queryStr));
 
   // Select fields
-  if(req.query.select){
+  if (req.query.select) {
     const fields = req.query.select.split(',').join(' ');
+    console.log(fields);
     // Selecting fields to display
     query = query.select(fields);
   }
-  if(req.query.sort){
+  if (req.query.sort) {
     const fields = req.query.sort.split(',').join(' ');
     // Sorting by fields
     query = query.sort(fields);
@@ -35,13 +41,41 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
     query = query.sort('-date');
   }
 
-  // and exequting
+  // Pagination
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 5;
+  const startIndex = (page -1) * limit;
+  const endIndex = page * limit;
+  const total = await Product.countDocuments();
+
+  query = query.skip(startIndex).limit(limit);
+
+  
+  // Exequting query
   const products = await query;
+
+  // Pagination result
+  const pagination = {};
+  
+  if(endIndex < total) {
+    pagination.next = {
+      page: page + 1,
+      limit: limit
+    }
+  }
+
+  if(startIndex > 0) {
+    pagination.prev = {
+      page: page - 1,
+      limit: limit
+    }
+  }
 
   res.status(200).json({
     success: true,
     data: products,
     count: products.length,
+    pagination: pagination
   });
 });
 

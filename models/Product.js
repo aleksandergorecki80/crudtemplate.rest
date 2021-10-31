@@ -2,6 +2,13 @@ const mongoose = require('mongoose');
 const slugify = require('slugify');
 
 const ProductShema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+  },
+  userName: {
+    type: String,
+  },
   title: {
     type: String,
     required: [true, 'Please add a title.'],
@@ -41,6 +48,7 @@ const ProductShema = new mongoose.Schema({
       },
       commentTitle: {
         type: String,
+        trim: true,
         required: [true, 'Please add a title.'],
       },
       text: {
