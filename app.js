@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 
 // Import routes
-const users = require('./routes/users');
+// const users = require('./routes/users');
 const auth = require('./routes/auth');
 const admin = require('./routes/admin');
 const resetpassword = require('./routes/resetpassword');
@@ -15,8 +15,8 @@ const errorHandler = require('./middleware/errorHandler');
 app.use(express.json());
 
 // Define routes
-app.use('/api/v1/users', users);
-app.use('/api/auth', auth);
+// app.use('/api/v1/users', users);
+app.use('/api/v1/auth', auth);
 app.use('/api/admin', admin);
 app.use('/api/resetpassword', resetpassword);
 app.use('/api/v1/products', products);

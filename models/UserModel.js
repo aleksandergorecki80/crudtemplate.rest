@@ -1,4 +1,9 @@
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const config = require('config');
+const jwtSecret = config.get('jwtSecret');
+const jwtExpire = config.get('jwtExpire');
+
 
 const UserShema = new mongoose.Schema({
     name: {
@@ -10,12 +15,20 @@ const UserShema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'Please add an email.'],
+        match: [
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            'Please add a valid email adress.'
+        ],
         unique: true
     },
     password: {
         type: String,
-        required: [true, 'Please enter a password']
+        required: [true, 'Please enter a password'],
+        minlength: 6,
+        select: false
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
     date: {
         type: Date,
         default: Date.now()
@@ -34,6 +47,13 @@ const UserShema = new mongoose.Schema({
         default: false
     }
 });
+
+// Sign JWT and return
+UserShema.methods.getSignedJwtToken = function() {
+    return jwt.sign({ id: this._id }, jwtSecret, {
+        expiresIn: jwtExpire
+    })
+}
 
 const User = mongoose.model('user', UserShema);
 

@@ -3,7 +3,7 @@ const User = require('../models/UserModel');
 const isAdmin = async (req, res, next) => {
   try {
     const user = await User.findOne({ _id: req.user._id });
-    if (user.status !== 'Admin') {
+    if (user.status !== 'administrator') {
       return res.status(401).json({ msg: 'Access denied' });
     }
     req.user = user;
