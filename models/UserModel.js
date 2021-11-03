@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const jwtSecret = config.get('jwtSecret');
 const jwtExpire = config.get('jwtExpire');
+const bcrypt = require('bcryptjs');
 
 
 const UserShema = new mongoose.Schema({
@@ -53,6 +54,11 @@ UserShema.methods.getSignedJwtToken = function() {
     return jwt.sign({ id: this._id }, jwtSecret, {
         expiresIn: jwtExpire
     })
+}
+
+// Match user entered password to hashed password in database
+UserShema.methods.matchPassword = async function(enteredPassword) {
+    return await bcrypt.compare(enteredPassword, this.password);
 }
 
 const User = mongoose.model('user', UserShema);

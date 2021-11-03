@@ -5,10 +5,9 @@ const config = require('config');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 
-
-
 const emailData = config.get('emailData');
 const host = config.get('host');
+const jwtCookieExpire = parseInt(config.get('jwtCookieExpire'), 10);
 
 const nodemailer = require('nodemailer');
 
@@ -44,7 +43,7 @@ exports.registerUser = asyncHandler(async (req, res, next) => {
     data: {
       name: user.name,
       email: user.email,
-      token
+      token,
     },
   });
 });
@@ -53,20 +52,40 @@ exports.registerUser = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/auth/login
 // @access  Public
 exports.loginUser = asyncHandler(async (req, res, next) => {
-  
-  const user = await User.findOne({ email: req.body.email });
-  if(!user) return next( new ErrorResponse([`Wrong email or password`], 404));
+  const user = await User.findOne({ email: req.body.email }).select(
+    '+password'
+  );
+  if (!user) return next(new ErrorResponse([`Wrong email or password`], 401));
 
+  const isMatch = await user.matchPassword(req.body.password);
+  if (!isMatch)
+    return next(new ErrorResponse([`Wrong email or password`], 401));
 
-    // Create token
-    const token = user.getSignedJwtToken();
+    sendTokenResponse(user, 200, res);
+});
 
-  res.status(200).json({
-    message: 'User logged in succesfully',
-    data: {
-      name: user.name,
-      email: user.email,
-      // token
-    }
-  });
-})
+// Get token from model, create cookie and send response
+const sendTokenResponse = (user, statusCode, res) => {
+  // Create token
+  const token = user.getSignedJwtToken();
+  const options = {
+    expires: new Date(Date.now() + jwtCookieExpire * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  if(process.env.NODE_ENV === 'production'){
+    options.secure = true;
+  }
+
+  res
+    .status(statusCode)
+    .cookie('token', token, options)
+    .json({
+      message: 'User logged in succesfully',
+      data: {
+        name: user.name,
+        email: user.email,
+        token,
+      },
+    });
+};

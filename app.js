@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+const cookieParser = require('cookie-parser');
+
 // Import routes
 // const users = require('./routes/users');
 const auth = require('./routes/auth');
@@ -11,8 +13,11 @@ const products = require('./routes/products');
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
 
-// Init Middleware
+// Body parser
 app.use(express.json());
+
+// Cookie parser
+app.use(cookieParser());
 
 // Define routes
 // app.use('/api/v1/users', users);
