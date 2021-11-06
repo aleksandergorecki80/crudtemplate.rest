@@ -44,38 +44,37 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
   // Pagination
   const page = parseInt(req.query.page, 10) || 1;
   const limit = parseInt(req.query.limit, 10) || 5;
-  const startIndex = (page -1) * limit;
+  const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const total = await Product.countDocuments();
 
   query = query.skip(startIndex).limit(limit);
 
-  
   // Exequting query
   const products = await query;
 
   // Pagination result
   const pagination = {};
-  
-  if(endIndex < total) {
+
+  if (endIndex < total) {
     pagination.next = {
       page: page + 1,
-      limit: limit
-    }
+      limit: limit,
+    };
   }
 
-  if(startIndex > 0) {
+  if (startIndex > 0) {
     pagination.prev = {
       page: page - 1,
-      limit: limit
-    }
+      limit: limit,
+    };
   }
 
   res.status(200).json({
     success: true,
     data: products,
     count: products.length,
-    pagination: pagination
+    pagination: pagination,
   });
 });
 
@@ -99,6 +98,9 @@ exports.getProduct = asyncHandler(async (req, res, next) => {
 // @route   POST /api/v1/products
 // @access  Private
 exports.createProduct = asyncHandler(async (req, res, next) => {
+  // Add user to req.body
+  req.body.user = req.user.id;
+
   const product = await Product.create(req.body);
   res.status(201).json({
     success: true,
@@ -110,18 +112,34 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/products/:id
 // @access  Private
 exports.updateProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const product = await Product.findById(req.params.id);
   if (!product) {
     return next(
       new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
     );
   }
+
+  // Make sure user is a product owner
+  if (product.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorised for this request.`
+      )
+    );
+  }
+
+  const updatedProduct = await Product.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
+
   res.status(200).json({
     success: true,
-    data: product,
+    data: updatedProduct,
   });
 });
 
@@ -129,14 +147,23 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 // @route   DELETE /api/v1/products/:id
 // @access  Private
 exports.deleteProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findByIdAndDelete(req.params.id);
+  const product = await Product.findById(req.params.id);
   if (!product) {
     return next(
       new ErrorResponse(`Product not found with id of ${req.params.id}`, 404)
     );
   }
+  // Make sure user is a product owner
+  if (product.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    return next(
+      new ErrorResponse(
+        `User ${req.params.id} is not authorised for this request.`
+      )
+    );
+  }
+  const deletedProduct = await Product.findByIdAndDelete(req.params.id);
   res.status(200).json({
     success: true,
-    data: product,
+    data: deletedProduct,
   });
 });

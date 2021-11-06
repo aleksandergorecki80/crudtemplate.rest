@@ -4,7 +4,8 @@ const slugify = require('slugify');
 const ProductShema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: 'User',
+    required: true
   },
   userName: {
     type: String,
@@ -44,7 +45,7 @@ const ProductShema = new mongoose.Schema({
     {
       user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'users',
+        ref: 'Users',
       },
       commentTitle: {
         type: String,

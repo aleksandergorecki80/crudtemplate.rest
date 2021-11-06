@@ -37,7 +37,6 @@ exports.registerUser = asyncHandler(async (req, res, next) => {
 
   // Create token
   const token = user.getSignedJwtToken();
-
   res.status(200).json({
     message: 'New account created',
     data: {
@@ -64,6 +63,43 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
     sendTokenResponse(user, 200, res);
 });
 
+// @desc    Get current user
+// @route   GET /api/v1/auth/me
+// @access  Private
+exports.getMe = asyncHandler(async (req, res, next) => {
+  const user = await User.findById(req.user.id);
+  res.status(200).json({
+    message: 'User data fetched',
+    data: {
+      user
+    }
+  })
+}); 
+
+
+// @desc    Forgot password
+// @route   GET /api/v1/auth/forgotpassword
+// @access  Public
+exports.forgotPassword = asyncHandler(async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if(!user) return next(new ErrorResponse('There is no user with that email', 404));
+
+  // Get reset token
+  const resetToken = user.getResetPasswordToken();
+  console.log(resetToken)
+
+  await user.save({ validateBeforeSave: false })
+
+  res.status(200).json({
+    message: 'User data fetched',
+    data: {
+      user
+    }
+  })
+}); 
+
+
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
   // Create token
@@ -76,7 +112,6 @@ const sendTokenResponse = (user, statusCode, res) => {
   if(process.env.NODE_ENV === 'production'){
     options.secure = true;
   }
-
   res
     .status(statusCode)
     .cookie('token', token, options)
