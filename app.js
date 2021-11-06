@@ -4,10 +4,7 @@ const app = express();
 const cookieParser = require('cookie-parser');
 
 // Import routes
-// const users = require('./routes/users');
 const auth = require('./routes/auth');
-const admin = require('./routes/admin');
-const resetpassword = require('./routes/resetpassword');
 const products = require('./routes/products');
 
 // Import middleware
@@ -22,8 +19,6 @@ app.use(cookieParser());
 // Define routes
 // app.use('/api/v1/users', users);
 app.use('/api/v1/auth', auth);
-app.use('/api/admin', admin);
-app.use('/api/resetpassword', resetpassword);
 app.use('/api/v1/products', products);
 
 // Use error midleware

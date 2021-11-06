@@ -1,15 +1,12 @@
+const crypto = require('crypto');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/UserModel');
 const config = require('config');
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
-
-const emailData = config.get('emailData');
-const host = config.get('host');
 const jwtCookieExpire = parseInt(config.get('jwtCookieExpire'), 10);
-
-const nodemailer = require('nodemailer');
+const sendEmail = require('../utils/sendEmail');
 
 // @desc    Register user
 // @route   POST /api/v1/auth/register
@@ -28,11 +25,11 @@ exports.registerUser = asyncHandler(async (req, res, next) => {
     return next(new ErrorResponse(validationErrors, 404));
   }
 
-  // Encrypting the password
-  const salt = await bcrypt.genSalt(10);
-  const hashedPassword = await bcrypt.hash(password, salt);
+  // // Encrypting the password
+  // const salt = await bcrypt.genSalt(10);
+  // const hashedPassword = await bcrypt.hash(password, salt);
 
-  const userData = new User({ ...req.body, password: hashedPassword });
+  const userData = new User({ ...req.body });
   const user = await User.create(userData);
 
   // Create token
@@ -60,7 +57,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
   if (!isMatch)
     return next(new ErrorResponse([`Wrong email or password`], 401));
 
-    sendTokenResponse(user, 200, res);
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Get current user
@@ -71,34 +68,79 @@ exports.getMe = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     message: 'User data fetched',
     data: {
-      user
-    }
-  })
-}); 
-
+      user,
+    },
+  });
+});
 
 // @desc    Forgot password
-// @route   GET /api/v1/auth/forgotpassword
+// @route   POST /api/v1/auth/forgotpassword
 // @access  Public
 exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if(!user) return next(new ErrorResponse('There is no user with that email', 404));
+  if (!user)
+    return next(new ErrorResponse('There is no user with that email', 404));
 
   // Get reset token
   const resetToken = user.getResetPasswordToken();
-  console.log(resetToken)
+  console.log(resetToken);
 
-  await user.save({ validateBeforeSave: false })
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset url
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/auth/resetpassword/${resetToken}`;
+
+  const text = `You are recieving this email because you (or someone else) has requested the reset of a password. 
+  Please fallow the link below. \n\n ${resetUrl}`;
+
+  try {
+    await sendEmail({
+      receiverEmail: user.email,
+      subject: 'Password reset link',
+      text,
+    });
+  } catch (err) {
+    console.log(err);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+    return next(new ErrorResponse('Email could not be sent', 500));
+  }
 
   res.status(200).json({
-    message: 'User data fetched',
+    message: 'Reset password email sent',
     data: {
-      user
-    }
-  })
-}); 
+      email: user.email,
+      text,
+    },
+  });
+});
 
+// @desc    Reset password
+// @route   PUT /api/v1/auth/resetpassword/:token
+// @access  Public
+exports.resetPassword = asyncHandler(async (req, res, next) => {
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+  if (!user) return next(new ErrorResponse('Invalid token.', 400));
+
+  // Set new password
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
+});
 
 // Get token from model, create cookie and send response
 const sendTokenResponse = (user, statusCode, res) => {
@@ -109,7 +151,7 @@ const sendTokenResponse = (user, statusCode, res) => {
     httpOnly: true,
   };
 
-  if(process.env.NODE_ENV === 'production'){
+  if (process.env.NODE_ENV === 'production') {
     options.secure = true;
   }
   res

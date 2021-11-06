@@ -7,7 +7,7 @@ const jwtExpire = config.get('jwtExpire');
 const bcrypt = require('bcryptjs');
 
 
-const UserShema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please add a name.'],
@@ -50,20 +50,32 @@ const UserShema = new mongoose.Schema({
     }
 });
 
+
+// Encrypt password using bcrypt
+UserSchema.pre('save', async function(next) {
+    if(!this.isModified('password')){
+        next();
+    }
+const salt = await bcrypt.genSalt(10);
+this.password = await bcrypt.hash(this.password, salt);
+
+});
+
+
 // Sign JWT and return
-UserShema.methods.getSignedJwtToken = function() {
+UserSchema.methods.getSignedJwtToken = function() {
     return jwt.sign({ id: this._id }, jwtSecret, {
         expiresIn: jwtExpire
     })
 }
 
 // Match user entered password to hashed password in database
-UserShema.methods.matchPassword = async function(enteredPassword) {
+UserSchema.methods.matchPassword = async function(enteredPassword) {
     return await bcrypt.compare(enteredPassword, this.password);
 }
 
 // Generate and hash password token
-UserShema.methods.getResetPasswordToken = function(){
+UserSchema.methods.getResetPasswordToken = function(){
     // Generate token
     const resetToken = crypto.randomBytes(20).toString('hex');
 
@@ -76,6 +88,6 @@ UserShema.methods.getResetPasswordToken = function(){
     return resetToken;
 }
 
-const User = mongoose.model('user', UserShema);
+const User = mongoose.model('user', UserSchema);
 
 module.exports = User;
