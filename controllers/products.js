@@ -7,14 +7,17 @@ const asyncHandler = require('../middleware/async');
 // @route   GET /api/v1/products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res, next) => {
+  
   const reqQuery = { ...req.query };
 
   // Fields to exclude, and remove them
   const removeFields = ['select', 'sort', 'page', 'limit'];
   removeFields.forEach((param) => delete reqQuery[param]);
 
-  console.log(req.query);
-  console.log(reqQuery);
+  // console.log(req.params, '<=== params')
+  // console.log(req.query, '<=== req.query');
+  // console.log(reqQuery, '<=== reqQuery');
+  console.log(req.params.userId, '<=== req.params.userId');
 
   // Create querry string and add operators
   let queryStr = JSON.stringify(reqQuery);
@@ -23,8 +26,16 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
     (match) => `$${match}`
   );
 
+
+  console.log(queryStr, '< === queryStr')
+
   // Finding resources id DB
-  let query = Product.find(JSON.parse(queryStr));
+  let query;
+  if(req.params.userId){
+    query = Product.find({$and: [ {user: req.params.userId}, JSON.parse(queryStr) ] });
+  } else {
+    query = Product.find(JSON.parse(queryStr));
+  }
 
   // Select fields
   if (req.query.select) {
@@ -43,13 +54,15 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
 
   // Pagination
   const page = parseInt(req.query.page, 10) || 1;
-  const limit = parseInt(req.query.limit, 10) || 5;
+  const limit = parseInt(req.query.limit, 10) || 55;
   const startIndex = (page - 1) * limit;
   const endIndex = page * limit;
   const total = await Product.countDocuments();
 
   query = query.skip(startIndex).limit(limit);
 
+  // console.log(query, '<= query')
+  
   // Exequting query
   const products = await query;
 

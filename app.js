@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser');
 // Import routes
 const auth = require('./routes/auth');
 const products = require('./routes/products');
+const users = require('./routes/users');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -20,6 +21,7 @@ app.use(cookieParser());
 // app.use('/api/v1/users', users);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/products', products);
+app.use('/api/v1/users', users);
 
 // Use error midleware
 app.use(errorHandler);

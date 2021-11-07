@@ -3,8 +3,7 @@ const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/UserModel');
 const config = require('config');
-const { validationResult } = require('express-validator');
-const bcrypt = require('bcryptjs');
+
 const jwtCookieExpire = parseInt(config.get('jwtCookieExpire'), 10);
 const sendEmail = require('../utils/sendEmail');
 
@@ -13,21 +12,7 @@ const sendEmail = require('../utils/sendEmail');
 // @access  Public
 
 exports.registerUser = asyncHandler(async (req, res, next) => {
-  const { password } = req.body;
-
-  // Validation results
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    let validationErrors = [];
-    errors.array().forEach((element) => {
-      validationErrors = [...validationErrors, element.msg];
-    });
-    return next(new ErrorResponse(validationErrors, 404));
-  }
-
   // // Encrypting the password
-  // const salt = await bcrypt.genSalt(10);
-  // const hashedPassword = await bcrypt.hash(password, salt);
 
   const userData = new User({ ...req.body });
   const user = await User.create(userData);
@@ -71,6 +56,43 @@ exports.getMe = asyncHandler(async (req, res, next) => {
       user,
     },
   });
+});
+
+// @desc    Update user details
+// @route   GET /api/v1/auth/me
+// @access  Private
+exports.updateUserDetails = asyncHandler(async (req, res, next) => {
+  const fieldsToUpdate = {
+    name: req.body.name,
+    email: req.body.email,
+  };
+  console.log(req.user, '---- req.user');
+  const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
+    new: true,
+    runValidators: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    data: user,
+  });
+});
+
+// @desc    Update user password
+// @route   PUT /api/v1/auth/updatepassword
+// @access  Private
+exports.updatePassword = asyncHandler(async (req, res, next) => {
+  console.log(req.user, ' === req.user');
+  const user = await User.findById(req.user.id).select('+password');
+
+  // Check current password
+  const isMatch = await user.matchPassword(req.body.currentPassword);
+  if (!isMatch) return next(new ErrorResponse('Password is incorrect', 401));
+
+  user.password = req.body.newPassword;
+  await user.save();
+
+  sendTokenResponse(user, 200, res);
 });
 
 // @desc    Forgot password

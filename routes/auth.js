@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, getMe, forgotPassword, resetPassword } = require('../controllers/auth');
+const {
+  registerUser,
+  loginUser,
+  getMe,
+  forgotPassword,
+  resetPassword,
+  updateUserDetails,
+  updatePassword
+} = require('../controllers/auth');
 const { check } = require('express-validator');
 const expressValidationResults = require('../middleware/expressValidationResults');
 const { protect } = require('../middleware/auth');
@@ -29,7 +37,15 @@ router.post(
 );
 
 router.route('/me').get(protect, getMe);
-
+router.route('/updatedetails').put(protect, updateUserDetails);
+router.route('/updatepassword').put(protect, 
+  check('newPassword')
+  .notEmpty()
+  .withMessage('Password can not be null')
+  .isLength({ min: 6 })
+  .withMessage('Password must be at least 6 characters long.'),
+  expressValidationResults,
+  updatePassword);
 router.route('/forgotpassword').post(forgotPassword);
 router.route('/resetpassword/:token').put(resetPassword);
 
