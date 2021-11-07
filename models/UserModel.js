@@ -48,6 +48,17 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Reverse population with virtuals
+UserSchema.virtual('products', {
+  ref: 'product',
+  localField: '_id',
+  foreignField: 'user',
+  justOne: false
 });
 
 // Encrypt password using bcrypt

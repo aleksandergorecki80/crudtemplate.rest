@@ -4,7 +4,7 @@ const slugify = require('slugify');
 const ProductShema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'user',
     required: true
   },
   userName: {
@@ -74,5 +74,5 @@ ProductShema.pre('save', function(next){
 });
 
 
-const Product = mongoose.model('Product', ProductShema);
+const Product = mongoose.model('product', ProductShema);
 module.exports = Product;

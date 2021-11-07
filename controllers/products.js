@@ -2,6 +2,7 @@ const { updateOne } = require('../models/Product');
 const Product = require('../models/Product');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
+const User = require('../models/UserModel');
 
 // @desc    Get all products
 // @route   GET /api/v1/products
@@ -34,7 +35,10 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
   if(req.params.userId){
     query = Product.find({$and: [ {user: req.params.userId}, JSON.parse(queryStr) ] });
   } else {
-    query = Product.find(JSON.parse(queryStr));
+    query = Product.find(JSON.parse(queryStr)).populate({
+      path: 'user',
+      select: 'name role -_id'
+    });
   }
 
   // Select fields

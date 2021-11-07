@@ -8,7 +8,7 @@ const Product = require('../models/Product');
 // @access  Private/Admin
 
 exports.getUsers = asyncHandler(async (req, res, next) => {
-    const users = await User.find();
+    const users = await User.find().populate('products');
   
     // Create token
     res.status(200).json({
