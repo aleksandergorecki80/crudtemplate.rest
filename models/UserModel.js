@@ -53,6 +53,14 @@ const UserSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
+// Cascade delete products when a user is deleted
+UserSchema.pre('remove', async function(next){
+  console.log(this)
+  console.log(`Courses being removed ${this._id}`)
+    await this.model('product').deleteMany({ user: this._id });
+    next();
+});
+
 // Reverse population with virtuals
 UserSchema.virtual('products', {
   ref: 'product',

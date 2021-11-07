@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 
 const {
-    getUsers
+    getUsers,
+    deleteUser
 } = require('../controllers/users');
 
 const { check } = require('express-validator');
@@ -19,5 +20,8 @@ router.use('/:userId/products', productsRouter);
 
 // Test users
 router.route('/').get(getUsers);
+
+// Delete
+router.route('/:userId').delete(deleteUser)
 
 module.exports = router;

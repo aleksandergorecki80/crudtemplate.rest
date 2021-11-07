@@ -38,3 +38,25 @@ exports.getUserProducts = asyncHandler(async (req, res, next) => {
         count: courses.length
     })
 }); 
+
+// @desc    Delete user by id
+// @route   DELETE /api/v1/users/:userId
+// @access  Private/Admin
+
+exports.deleteUser = asyncHandler( async (req, res, next) => {
+  const user = await User.findById(req.params.userId);
+
+  if(!user){
+     return next(new ErrorResponse(`User with id: ${req.params.userId} does not exist`));
+    }
+
+    user.remove();
+
+    res.status(200).json({ 
+      message: `User with id: ${req.params.userId} removed.`,
+      data: {
+        user
+      }
+    });
+  
+});
