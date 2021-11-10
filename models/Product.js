@@ -74,5 +74,15 @@ ProductShema.pre('save', function(next){
 });
 
 
+// Call getAverageCost after save
+ProductShema.post('save', function() {
+
+});
+
+// Call getAverageCost before remove
+ProductShema.pre('remove', function() {
+
+});
+
 const Product = mongoose.model('product', ProductShema);
 module.exports = Product;

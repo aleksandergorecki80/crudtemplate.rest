@@ -1,14 +1,17 @@
 const { updateOne } = require('../models/Product');
+const path = require('path');
 const Product = require('../models/Product');
 const ErrorResponse = require('../utils/errorResponse');
 const asyncHandler = require('../middleware/async');
 const User = require('../models/UserModel');
+const config = require('config');
+const MAX_FILE_UPLOAD = config.get('fileUpload.MAX_FILE_UPLOAD');
+const FILE_UPLOAD_PATH = config.get('fileUpload.FILE_UPLOAD_PATH');
 
 // @desc    Get all products
 // @route   GET /api/v1/products
 // @access  Public
 exports.getProducts = asyncHandler(async (req, res, next) => {
-  
   const reqQuery = { ...req.query };
 
   // Fields to exclude, and remove them
@@ -27,17 +30,18 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
     (match) => `$${match}`
   );
 
-
-  console.log(queryStr, '< === queryStr')
+  console.log(queryStr, '< === queryStr');
 
   // Finding resources id DB
   let query;
-  if(req.params.userId){
-    query = Product.find({$and: [ {user: req.params.userId}, JSON.parse(queryStr) ] });
+  if (req.params.userId) {
+    query = Product.find({
+      $and: [{ user: req.params.userId }, JSON.parse(queryStr)],
+    });
   } else {
     query = Product.find(JSON.parse(queryStr)).populate({
       path: 'user',
-      select: 'name role -_id'
+      select: 'name role -_id',
     });
   }
 
@@ -66,7 +70,7 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
   query = query.skip(startIndex).limit(limit);
 
   // console.log(query, '<= query')
-  
+
   // Exequting query
   const products = await query;
 
@@ -182,5 +186,58 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
   res.status(200).json({
     success: true,
     data: deletedProduct,
+  });
+});
+
+// @desc    Upload pfoto for product
+// @route   PUT /api/v1/products/:id/photo
+// @access  Private
+exports.productPhotoUpload = asyncHandler(async (req, res, next) => {
+  const product = await Product.findById(req.params.id);
+
+  if (!product) {
+    return next(
+      new ErrorResponse(`Product with id ${req.params.id} not found`, 404)
+    );
+  }
+
+  if (!req.files) {
+    return next(new ErrorResponse(`Please upload a photo`, 400));
+  }
+
+  const file = req.files.file;
+
+  // Make sure the image is a photo
+  if (!file.mimetype.startsWith('image')) {
+    return next(new ErrorResponse(`Please upload a image file`, 400));
+  }
+
+  // Check filesize
+  if (file.size > parseInt(MAX_FILE_UPLOAD, 10)) {
+    return next(new ErrorResponse(`The image file must be less than 1MB`, 400));
+  }
+
+  // Crate custom filename
+  file.name = `photo_${product._id}_${Date.now()}${path.parse(file.name).ext}`;
+
+  file.mv(`${FILE_UPLOAD_PATH}/${file.name}`, async (err) => {
+    if (err) {
+      console.error(err);
+      return next(new ErrorResponse(`File upload failed`, 500));
+    }
+
+    const photosUpdated = [...product.photos, file.name];
+
+    console.log(product.photos);
+    const productUpdated = await Product.findByIdAndUpdate(
+      req.params.id,
+      { photos: photosUpdated },
+      { returnOriginal: false }
+    );
+    res.status(200).json({
+      success: true,
+      message: 'Photo uploated',
+      data: productUpdated,
+    });
   });
 });
