@@ -4,21 +4,14 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // Fields to exclude, and remove them
     const removeFields = ['select', 'sort', 'page', 'limit'];
     removeFields.forEach((param) => delete reqQuery[param]);
-  
-    // console.log(req.params, '<=== params')
-    // console.log(req.query, '<=== req.query');
-    // console.log(reqQuery, '<=== reqQuery');
-    console.log(req.params.userId, '<=== req.params.userId');
-  
+   
     // Create querry string and add operators
     let queryStr = JSON.stringify(reqQuery);
     queryStr = queryStr.replace(
       /\b(gt|gte|lt|lte|in)\b/g,
       (match) => `$${match}`
     );
-  
-    console.log(queryStr, '< === queryStr');
-  
+   
     // Finding resources id DB
     let query;
     if (req.params.userId) {
@@ -56,9 +49,7 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     if(populate) {
         query = query.populate(populate);
     }
-  
-    // console.log(query, '<= query')
-  
+ 
     // Exequting query
     const results = await query;
   

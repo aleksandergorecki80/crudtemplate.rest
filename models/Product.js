@@ -7,9 +7,9 @@ const ProductShema = new mongoose.Schema({
     ref: 'user',
     required: true
   },
-  userName: {
-    type: String,
-  },
+  // userName: {
+  //   type: String,
+  // },
   title: {
     type: String,
     required: [true, 'Please add a title.'],
