@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const config = require('config');
 const mongoURI = config.get('mongoURI');
 
-const Product = require('./models/Product');
+const Comments = require('./models/Comment');
 
 // connect do DB
 mongoose.connect(mongoURI, {
@@ -11,14 +11,14 @@ mongoose.connect(mongoURI, {
   useUnifiedTopology: true,
 });
 
-const products = JSON.parse(
-  fs.readFileSync(`${__dirname}/../_data/products.json`, 'utf-8')
+const comments = JSON.parse(
+  fs.readFileSync(`${__dirname}/../_data/comments.json`, 'utf-8')
 );
 
 // Import into DB
 const importData = async () =>{
     try {
-        await Product.create(products);
+        await Comments.create(comments);
         console.log('Data imported')
         process.exit();
     } catch (err) { 
@@ -29,7 +29,7 @@ const importData = async () =>{
 // Delete data
 const deleteData = async () =>{
     try {
-        await Product.deleteMany();
+        await Comments.deleteMany();
         console.log('Data destroyed')
         process.exit();
     } catch (err) { 

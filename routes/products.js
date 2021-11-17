@@ -10,9 +10,13 @@ const {
 } = require('../controllers/products');
 
 const Product = require('../models/Product');
+const commentRouter = require('./comments');
 const advancedResults = require('../middleware/advancedResults');
 
 const { protect, authorize } = require('../middleware/auth');
+
+// Re-route int other routes
+router.use('/:productId/comments', commentRouter);
 
 router
     .route('/')

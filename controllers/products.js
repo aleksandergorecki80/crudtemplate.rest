@@ -19,7 +19,10 @@ exports.getProducts = asyncHandler(async (req, res, next) => {
 // @route   GET /api/v1/products/:id
 // @access  Public
 exports.getProduct = asyncHandler(async (req, res, next) => {
-  const product = await Product.findById(req.params.id);
+  const product = await Product.findById(req.params.id).populate({
+    path: 'comments',
+    select: 'title rating'
+  });
   if (!product) {
     return next(
       new ErrorResponse([`Product not found with id of ${req.params.id}`], 404)

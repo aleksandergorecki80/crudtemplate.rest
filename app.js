@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const auth = require('./routes/auth');
 const products = require('./routes/products');
 const users = require('./routes/users');
+const comments = require('./routes/comments');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -27,6 +28,7 @@ app.use(fileUpload());
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/products', products);
 app.use('/api/v1/users', users);
+app.use('/api/v1/comments', comments);
 
 // Use error midleware
 app.use(errorHandler);

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 
-const ProductShema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'user',
@@ -36,53 +36,54 @@ const ProductShema = new mongoose.Schema({
       type: Number,
       required: [true, 'Please add a price.']
   },
-  rating: {
+  averageRating: {
       type: Number,
       min: 1,
       max: 5
   },
-  comments: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Users',
-      },
-      commentTitle: {
-        type: String,
-        trim: true,
-        required: [true, 'Please add a title.'],
-      },
-      text: {
-        type: String,
-        required: [true, 'Please write a comment.'],
-      },
-      userName: {
-        type: String,
-      },
-      date: {
-        type: Date,
-        default: Date.now(),
-      }
-    }
-  ]
+  // comments: [
+  //   {
+  //     user: {
+  //       type: mongoose.Schema.Types.ObjectId,
+  //       ref: 'Users',
+  //     },
+  //     commentTitle: {
+  //       type: String,
+  //       trim: true,
+  //       required: [true, 'Please add a title.'],
+  //     },
+  //     text: {
+  //       type: String,
+  //       required: [true, 'Please write a comment.'],
+  //     },
+  //     userName: {
+  //       type: String,
+  //     },
+  //     date: {
+  //       type: Date,
+  //       default: Date.now(),
+  //     }
+  //   }
+  // ]
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
+});
+
+// Reverse population with virtuals
+ProductSchema.virtual('comments', {
+  ref: 'comment',
+  localField: '_id',
+  foreignField: 'product',
+  justOne: false
 });
 
 // Create product slug from the title
-ProductShema.pre('save', function(next){
+ProductSchema.pre('save', function(next){
   this.slug = slugify(this.title, { lower: true });
   next();
 });
 
 
-// Call getAverageCost after save
-ProductShema.post('save', function() {
-
-});
-
-// Call getAverageCost before remove
-ProductShema.pre('remove', function() {
-
-});
-
-const Product = mongoose.model('product', ProductShema);
+const Product = mongoose.model('product', ProductSchema);
 module.exports = Product;
