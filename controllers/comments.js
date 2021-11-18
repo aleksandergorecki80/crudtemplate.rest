@@ -34,7 +34,7 @@ exports.getComment = asyncHandler(async (req, res, next) => {
     })
     ;
   if (!comment) {
-    return next(new ErrorResponse(`No review found.`, 404));
+    return next(new ErrorResponse([`No review found.`], 404));
   }
   res.status(200).json({
     success: true,
@@ -54,7 +54,7 @@ exports.addComment = asyncHandler(async (req, res, next) => {
 
     if(!product){
       return next(
-        new ErrorResponse(`No product found with the id: ${req.params.productId}, 404`)
+        new ErrorResponse([`No product found with the id: ${req.params.productId}`], 404)
       );
     };
 
@@ -64,4 +64,51 @@ exports.addComment = asyncHandler(async (req, res, next) => {
         success: true,
         data: comment
     })
-})
+});
+
+// @desc    Update a comment
+// @route   PUT /api/v1/comments/:id
+// @access  Private
+exports.updateComment = asyncHandler(async (req, res, next) => {
+  const comment = await Comment.findById(req.params.id);
+  if(!comment){
+    return next(new ErrorResponse([`Comment with id: ${req.params.userId} does not exist`], 404));
+  }
+
+   // Make sure comment belong to user or user is admin
+  if(comment.user.toString() !== req.user.id &&  req.user.role !== 'administrator'){
+    return next(new ErrorResponse([`Access denied`], 401));
+  }
+
+  const updatedComment = await Comment.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true
+  })
+
+  res.status(200).json({
+    success: true,
+    data: updatedComment
+  })
+}); 
+
+// @desc    Delete a comment
+// @route   DELETE   /api/v1/comments/:id
+// @access  Private
+exports.deleteComment = asyncHandler(async (req, res, next) => {
+  const comment = await Comment.findById(req.params.id);
+  if(!comment){
+    return next(new ErrorResponse([`Comment with id: ${req.params.userId} does not exist`], 404));
+  }
+
+   // Make sure comment belong to user or user is admin
+  if(comment.user.toString() !== req.user.id &&  req.user.role !== 'administrator'){
+    return next(new ErrorResponse([`Access denied`], 401));
+  }
+
+  await comment.remove()
+
+  res.status(200).json({
+    success: true,
+    data: {}
+  })
+}); 

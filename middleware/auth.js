@@ -19,7 +19,7 @@ exports.protect = asyncHandler(async (req, res, next) => {
   // }
 
   // Make sure token exixts
-  if (!token) return next(new ErrorResponse(['Not authorized access', 401]));
+  if (!token) return next(new ErrorResponse(['Not authorized access'], 401));
 
   try {
     // Verify token

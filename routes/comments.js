@@ -3,7 +3,9 @@ const router = express.Router({ mergeParams: true });
 const {
     getComments,
     getComment,
-    addComment
+    addComment,
+    updateComment,
+    deleteComment
 } = require('../controllers/comments');
 
 const Comment = require('../models/Comment');
@@ -23,7 +25,9 @@ router
     .post(protect, authorize('user', 'administrator'), addComment);
 router
     .route('/:id')
-    .get(getComment);
+    .get(getComment)
+    .put(protect, authorize('user', 'administrator'), updateComment)
+    .delete(protect, authorize('user', 'administrator'), deleteComment);
 
 router
     .route('/')
