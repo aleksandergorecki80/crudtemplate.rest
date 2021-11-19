@@ -4,6 +4,7 @@ const {
   registerUser,
   loginUser,
   getMe,
+  logout,
   forgotPassword,
   resetPassword,
   updateUserDetails,
@@ -37,6 +38,7 @@ router.post(
 );
 
 router.route('/me').get(protect, getMe);
+router.route('/logout').get(protect, logout);
 router.route('/updatedetails').put(protect, updateUserDetails);
 router.route('/updatepassword').put(protect, 
   check('newPassword')

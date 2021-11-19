@@ -2,6 +2,9 @@ const express = require('express');
 const app = express();
 const fileUpload = require('express-fileupload');
 const path = require('path');
+const mongoSanitize = require('express-mongo-sanitize');
+const helmet = require("helmet");
+var xss = require('xss-clean');
 
 const cookieParser = require('cookie-parser');
 
@@ -22,6 +25,15 @@ app.use(cookieParser());
 
 // File uploading
 app.use(fileUpload());
+
+// Sanitize data
+app.use(mongoSanitize());
+
+// Set security headers
+app.use(helmet());
+
+// Prevent XSS
+app.use(xss());
 
 // Define routes
 // app.use('/api/v1/users', users);
