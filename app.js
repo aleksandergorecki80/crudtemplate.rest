@@ -4,7 +4,10 @@ const fileUpload = require('express-fileupload');
 const path = require('path');
 const mongoSanitize = require('express-mongo-sanitize');
 const helmet = require("helmet");
-var xss = require('xss-clean');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+const rateLimit = require("express-rate-limit");
+const cors = require('cors')
 
 const cookieParser = require('cookie-parser');
 
@@ -34,6 +37,21 @@ app.use(helmet());
 
 // Prevent XSS
 app.use(xss());
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 100    // limit each IP to 100 requests per windowMs
+});
+//  apply to all requests
+app.use(limiter);
+
+// Prevent http param pollution
+app.use(hpp());
+
+// Enable CORS 
+// Cross-Origin Resource Sharing allows a server to indicate any origins (domain, scheme, or port) other than its own from
+app.use(cors());
 
 // Define routes
 // app.use('/api/v1/users', users);
