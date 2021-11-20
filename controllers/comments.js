@@ -62,6 +62,7 @@ exports.addComment = asyncHandler(async (req, res, next) => {
 
     res.status(201).json({
         success: true,
+        message: 'Comment added',
         data: comment
     })
 });
@@ -87,6 +88,7 @@ exports.updateComment = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: 'Comment updated',
     data: updatedComment
   })
 }); 
@@ -109,6 +111,7 @@ exports.deleteComment = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: 'Comment deleted',
     data: {}
   })
 }); 

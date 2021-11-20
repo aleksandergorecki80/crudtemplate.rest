@@ -51,6 +51,7 @@ exports.updateUser = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: `User data ${user.name} has been updated`,
     data: user
   })
 });
@@ -67,9 +68,7 @@ exports.deleteUser = asyncHandler( async (req, res, next) => {
     user.remove();
     res.status(200).json({ 
       message: `User with id: ${req.params.userId} removed.`,
-      data: {
-        user
-      }
+      data: {}
     });
 });
 

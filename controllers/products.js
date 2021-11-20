@@ -44,6 +44,7 @@ exports.createProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.create(req.body);
   res.status(201).json({
     success: true,
+    message: 'New product added',
     data: product,
   });
 });
@@ -79,6 +80,7 @@ exports.updateProduct = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: 'Product updated',
     data: updatedProduct,
   });
 });
@@ -104,7 +106,8 @@ exports.deleteProduct = asyncHandler(async (req, res, next) => {
   const deletedProduct = await Product.findByIdAndDelete(req.params.id);
   res.status(200).json({
     success: true,
-    data: deletedProduct,
+    message: 'Product deleted',
+    data: {}
   });
 });
 
@@ -147,7 +150,6 @@ exports.productPhotoUpload = asyncHandler(async (req, res, next) => {
 
     const photosUpdated = [...product.photos, file.name];
 
-    console.log(product.photos);
     const productUpdated = await Product.findByIdAndUpdate(
       req.params.id,
       { photos: photosUpdated },

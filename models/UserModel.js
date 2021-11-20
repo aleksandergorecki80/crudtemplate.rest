@@ -5,7 +5,6 @@ const config = require('config');
 const jwtSecret = config.get('jwtSecret');
 const jwtExpire = config.get('jwtExpire');
 const bcrypt = require('bcryptjs');
-const ErrorResponse = require('../utils/errorResponse');
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -39,15 +38,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     default: 'user',
     enum: ['moderator', 'user'],
-  },
-  isConfirmed: {
-    type: Boolean,
-    default: false,
-  },
-  isBlocked: {
-    type: Boolean,
-    default: false,
-  },
+  }
 }, {
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
@@ -55,8 +46,6 @@ const UserSchema = new mongoose.Schema({
 
 // Cascade delete products when a user is deleted
 UserSchema.pre('remove', async function(next){
-  console.log(this)
-  console.log(`Courses being removed ${this._id}`)
     await this.model('product').deleteMany({ user: this._id });
     next();
 });

@@ -6,11 +6,7 @@
   "scripts": {
     "test": "jest --watchAll",
     "server": "nodemon server.js",
-    "client": "npm start --prefix client",
-    "dev-server": "SET \"NODE_ENV=dev\"&& nodemon server.js",
-    "seed-data": "SET \"NODE_ENV=dev\"&& node seeder.js -i",
-    "dev": "concurrently \"npm run dev-server\" \"npm run client\"",
-    "start": "SET \"NODE_ENV=production\"&& npm run build --prefix client && nodemon server.js"
+    "dev-server": "SET \"NODE_ENV=dev\"&& nodemon server.js"
   },
   "author": "Aleksander Gorecki",
   "license": "ISC",
@@ -31,7 +27,6 @@
     "morgan": "^1.10.0",
     "nodemailer": "^6.6.3",
     "react-router-dom": "^5.2.1",
-    "slugify": "^1.6.1",
     "xss-clean": "^0.1.1"
   },
   "devDependencies": {

@@ -54,7 +54,6 @@ app.use(hpp());
 app.use(cors());
 
 // Define routes
-// app.use('/api/v1/users', users);
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/products', products);
 app.use('/api/v1/users', users);
@@ -63,13 +62,14 @@ app.use('/api/v1/comments', comments);
 // Use error midleware
 app.use(errorHandler);
 
-app.use(express.static(path.join(__dirname, 'public'))); // usun !!
 // PRODUCTION STATIC ASSETS
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'public')));
-    app.get('^(?!api\/)[\/\w\.\,-]*', (req, res) => {
-      res.sendFile(path.resolve(__dirname, './client', 'build', 'index.html'));
-    });
+
+    // ---    FOR FRONTEND  ---
+    // app.get('^(?!api\/)[\/\w\.\,-]*', (req, res) => {
+    //   res.sendFile(path.resolve(__dirname, './client', 'build', 'index.html'));
+    // });
   }
 
 console.log(`Running in ${process.env.NODE_ENV} mode.`);

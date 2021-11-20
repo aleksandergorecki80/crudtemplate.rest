@@ -19,6 +19,7 @@ exports.registerUser = asyncHandler(async (req, res, next) => {
   // Create token
   const token = user.getSignedJwtToken();
   res.status(200).json({
+    success: true,
     message: 'New account created',
     data: {
       name: user.name,
@@ -50,6 +51,7 @@ exports.loginUser = asyncHandler(async (req, res, next) => {
 exports.getMe = asyncHandler(async (req, res, next) => {
   const user = await User.findById(req.user.id);
   res.status(200).json({
+    success: true,
     message: 'User data fetched',
     data: {
       user,
@@ -84,7 +86,6 @@ exports.updateUserDetails = asyncHandler(async (req, res, next) => {
     name: req.body.name,
     email: req.body.email,
   };
-  console.log(req.user, '---- req.user');
   const user = await User.findByIdAndUpdate(req.user.id, fieldsToUpdate, {
     new: true,
     runValidators: true,
@@ -92,6 +93,7 @@ exports.updateUserDetails = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     success: true,
+    message: 'User data updated',
     data: user,
   });
 });
@@ -100,7 +102,6 @@ exports.updateUserDetails = asyncHandler(async (req, res, next) => {
 // @route   PUT /api/v1/auth/updatepassword
 // @access  Private
 exports.updatePassword = asyncHandler(async (req, res, next) => {
-  console.log(req.user, ' === req.user');
   const user = await User.findById(req.user.id).select('+password');
 
   // Check current password
@@ -124,7 +125,6 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
 
   // Get reset token
   const resetToken = user.getResetPasswordToken();
-  console.log(resetToken);
 
   await user.save({ validateBeforeSave: false });
 
@@ -143,7 +143,6 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
       text,
     });
   } catch (err) {
-    console.log(err);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     await user.save({ validateBeforeSave: false });
@@ -151,6 +150,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   }
 
   res.status(200).json({
+    success: true,
     message: 'Reset password email sent',
     data: {
       email: user.email,

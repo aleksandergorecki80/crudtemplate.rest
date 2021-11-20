@@ -25,7 +25,6 @@ const advancedResults = (model, populate) => async (req, res, next) => {
     // Select fields
     if (req.query.select) {
       const fields = req.query.select.split(',').join(' ');
-      console.log(fields);
       // Selecting fields to display
       query = query.select(fields);
     }
