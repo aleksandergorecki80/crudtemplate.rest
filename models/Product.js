@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const slugify = require('slugify');
 
 const ProductSchema = new mongoose.Schema({
   user: {

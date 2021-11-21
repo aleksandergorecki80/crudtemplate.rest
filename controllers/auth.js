@@ -136,6 +136,9 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
   const text = `You are recieving this email because you (or someone else) has requested the reset of a password. 
   Please fallow the link below. \n\n ${resetUrl}`;
 
+  const html = `<p>You are recieving this email because you (or someone else) has requested the reset of a password. 
+  Please fallow the link below. \n\n <a href=${resetUrl}>${resetUrl}</a><p>`
+
   try {
     await sendEmail({
       receiverEmail: user.email,
@@ -155,6 +158,7 @@ exports.forgotPassword = asyncHandler(async (req, res, next) => {
     data: {
       email: user.email,
       text,
+      html
     },
   });
 });
