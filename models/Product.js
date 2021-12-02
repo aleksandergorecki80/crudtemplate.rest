@@ -20,16 +20,11 @@ const ProductSchema = new mongoose.Schema({
     maxlength: [500, 'Description can not be more than 500 characters.']
   },
   photos: {
-    type: [String],
-    default: 'no-photo.jpg'
+    type: [String]
   },
   date: {
     type: Date,
     default: Date.now(),
-  },
-  price: {
-      type: Number,
-      required: [true, 'Please add a price.']
   },
   averageRating: {
       type: Number,
