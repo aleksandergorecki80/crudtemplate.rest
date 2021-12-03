@@ -1,7 +1,11 @@
 const mongoose = require('mongoose');
-const slugify = require('slugify');
 
-const ProductShema = new mongoose.Schema({
+const ProductSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: true
+  },
   title: {
     type: String,
     required: [true, 'Please add a title.'],
@@ -10,60 +14,35 @@ const ProductShema = new mongoose.Schema({
     maxlength: [50, 'Title can not be more than 50 characters.'],
     unique: true
   },
-  slug: String,
   description: {
     type: String,
     required: [true, 'Please add a description'],
-    maxlength: [500, 'Title can not be more than 500 characters.']
+    maxlength: [500, 'Description can not be more than 500 characters.']
   },
   photos: {
-    type: [String],
-    default: 'no-photo.jpg'
+    type: [String]
   },
   date: {
     type: Date,
     default: Date.now(),
   },
-  price: {
-      type: Number,
-      required: [true, 'Please add a price.']
-  },
-  rating: {
+  averageRating: {
       type: Number,
       min: 1,
       max: 5
-  },
-  comments: [
-    {
-      user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'users',
-      },
-      commentTitle: {
-        type: String,
-        required: [true, 'Please add a title.'],
-      },
-      text: {
-        type: String,
-        required: [true, 'Please write a comment.'],
-      },
-      userName: {
-        type: String,
-      },
-      date: {
-        type: Date,
-        default: Date.now(),
-      }
-    }
-  ]
+  }
+}, {
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
-// Create product slug from the title
-ProductShema.pre('save', function(next){
-  this.slug = slugify(this.title, { lower: true });
-  next();
+// Reverse population with virtuals
+ProductSchema.virtual('comments', {
+  ref: 'comment',
+  localField: '_id',
+  foreignField: 'product',
+  justOne: false
 });
 
-
-const Product = mongoose.model('Product', ProductShema);
+const Product = mongoose.model('product', ProductSchema);
 module.exports = Product;
