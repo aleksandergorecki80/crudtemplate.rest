@@ -65,7 +65,6 @@ app.use(errorHandler);
 // PRODUCTION STATIC ASSETS
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, 'public')));
-
     // ---    FOR FRONTEND  ---
     // app.get('^(?!api\/)[\/\w\.\,-]*', (req, res) => {
     //   res.sendFile(path.resolve(__dirname, './client', 'build', 'index.html'));
