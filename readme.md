@@ -23,7 +23,7 @@ npm run dev
 - Run in prod mode
 
 ```
-npm statr
+npm start
 ```
 
 ### Verison: 1.0.0
